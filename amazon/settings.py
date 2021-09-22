@@ -123,7 +123,7 @@ USE_TZ = True
 #Static files configuration
 # STATIC_URL to add prefix to static files when requested
 # Example: 127.0.0.1:8000/assets/file_name
-STATIC_URL = '/assets/'
+STATIC_URL = '/static-files/'
 
 # STATIC_ROOT to define a path where all the static files will be copied
 # Example: PROJECT_ROOT/assets
@@ -133,6 +133,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'assets')
 STATICFILES_DIRS  = [
     os.path.join(BASE_DIR, 'amazon/assets'),
 ]
+
+MEDIA_URL = '/media-files/'
+MEDIA_ROOT = os.path.join('media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

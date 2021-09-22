@@ -1,9 +1,18 @@
-from django.http.response import HttpResponse
 from django.shortcuts import render
-from django.http import HttpResponse
+from product import models as ProductModels
 
 
 def homePage(request):
-    return render(request, 'index.html')
-    
-    
+    """ Home page Render Function """    
+
+    navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+    productCategories = ProductModels.ProductCategory.objects.filter(status=True)
+    products = ProductModels.Product.objects.filter(status=True).order_by('-id')[:3]
+
+    return render(request, 'index.html', {
+        'navigationProductCategories' : navigationProductCategories,
+        'productCategories' : productCategories,
+        'products' : products
+    })
+
+  
