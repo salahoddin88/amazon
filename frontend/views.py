@@ -1,10 +1,34 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from product import models as ProductModels
+from django.contrib.auth import authenticate, login
+from django.contrib import messages
+""" User Models """
+from django.contrib.auth.models import User
+
+def customerLogin(request):
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['password']
+        """ Authenticate method will perfrom a match with submitted data and database """
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            """ Login method make user authorized """
+            login(request, user)
+            """ redirect will take url pattern name """
+            return redirect('homePage')
+        else:
+            """ User can see this messages with defined tages in setting.py file """
+            messages.error(request, 'Invlid Crendtials')
+            return redirect('customerLogin')
+    else:
+        navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+        return render(request, 'customer-login.html', {
+            'navigationProductCategories' : navigationProductCategories,
+        })
 
 
 def homePage(request):
     """ Home page Render Function """    
-    print(request.GET)
     navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
     productCategories = ProductModels.ProductCategory.objects.filter(status=True)
     products = ProductModels.Product.objects.filter(status=True).order_by('-id')[:3]
@@ -35,4 +59,8 @@ def ProductDetails(request, product_id):
         product= {}
     return render(request, 'product-details.html', {
         'navigationProductCategories' : navigationProductCategories,
+        'product' :product
     })
+
+def AddToCart(request, product_id):
+    pass
