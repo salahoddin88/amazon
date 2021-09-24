@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
     <div class="container">
+        
         <div class="row">
             {% if product %}
             
@@ -44,12 +45,20 @@
                 </div>
                 <div class="col-md-4">
                     <div class="sidebar">
+                        
                         <div class="widget price text-center">
                             <h4>Price</h4>
                             <p>${{product.price}}</p>
                         </div>
                         <!-- User Profile widget -->
                         <div class="widget user text-center">
+                            {% if messages %}
+                            <ul class="messages">
+                                {% for message in messages %}
+                                <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                                    {% endfor %}
+                            </ul>
+                            {% endif %}
                             <ul class="list-inline mt-20">
                                 <li class="list-inline-item">
                                     <a href="{% url 'AddToCart' product_id=product.id %}" class="btn btn-contact d-inline-block  btn-primary px-lg-5 my-1 px-md-3">Add To Cart</a>

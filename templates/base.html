@@ -60,13 +60,27 @@
                                 {% endfor %}
                             </ul>
                             <ul class="navbar-nav ml-auto mt-10">
-                                <li class="nav-item">
-                                    <a class="nav-link login-button" href="{% url 'customerLogin' %}">Login</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link text-white add-button" href="ad-listing.html"><i
-                                            class="fa fa-plus-circle"></i> Add Listing</a>
-                                </li>
+                                {% if request.user.is_authenticated %}
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="{% url 'CustomerCart' %}"><i class="fa fa-shopping-cart"></i>  Cart</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="#">Order History</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="#">Profile</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="{% url 'customerLogout' %}">Logout</a>
+                                    </li>
+                                {% else %}
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="{% url 'customerLogin' %}">Login</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link login-button" href="{% url 'CustomerRegistration' %}">Registration</a>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </div>
                     </nav>

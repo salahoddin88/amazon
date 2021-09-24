@@ -10,3 +10,4 @@ def AccountPage1(request):
 def AccountPage2(request):
     return HttpResponse('AccountPage2')
     
+
