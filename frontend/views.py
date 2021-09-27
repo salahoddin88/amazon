@@ -3,8 +3,12 @@ from product import models as ProductModels
 from cart import models as CartModels
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+
+from orders import models as OrdersModels
 """ User Models """
 from django.contrib.auth.models import User
+from user_profile import models as UserProfileModels
+from datetime import datetime
 
 
 def customerLogin(request):
@@ -137,5 +141,119 @@ def DeleteCartProduct(request, cart_id):
             pass
         messages.success(request, 'Product deleted form cart')
         return redirect('CustomerCart')
+    else:
+        return redirect('customerLogin')
+
+
+def CustomerProfile(request):
+
+    if request.user.is_authenticated:
+        userProfile, _ =  UserProfileModels.UserProfile.objects.get_or_create(user=request.user)
+        if request.method == 'POST':
+            firstName = request.POST.get('first_name')
+            lastName = request.POST.get('last_name')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            confirmPassword = request.POST.get('confirm_password')
+            address = request.POST.get('address')
+            mobile = request.POST.get('mobile')
+            profilePicture = request.FILES.get('profile_picture')
+            
+            request.user.first_name = firstName
+            request.user.last_name = lastName
+            request.user.email = email
+            request.user.save()
+            userProfile.address = address
+            userProfile.mobile = mobile
+
+            if profilePicture:
+                userProfile.profile_picture = profilePicture
+            userProfile.save()
+
+            if password != "" :
+                if confirmPassword == "":
+                    messages.error(request, 'Please Enter confirm password')
+                    return redirect('CustomerProfile')
+                if password == confirmPassword:
+                    request.user.set_password(password)
+                    request.user.save()
+                    messages.error(request, 'Password updated successfuly')
+                    return redirect('customerLogin')
+                else:
+                    messages.error(request, 'Password does not match with confirm password')
+                    return redirect('CustomerProfile')
+
+
+            messages.success(request, 'Profile updated successfully')
+            return redirect('CustomerProfile')
+
+        else:
+            navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+            return render(request, 'customer-profile.html', {
+                'navigationProductCategories' : navigationProductCategories,
+                'userProfile' : userProfile,
+            })
+    else:
+        return redirect('homePage')
+
+
+def CustomerCheckOut(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            address = request.POST.get('address')
+            carts = CartModels.Cart.objects.filter(user=request.user)
+            if carts:
+                orders = OrdersModels.Orders.objects.create(
+                    user=request.user,
+                    date_time= datetime.now(),
+                    address=address,
+                )
+
+                for cart in carts:
+                    OrdersModels.OrderDetails.objects.create(
+                        orders=orders,
+                        product=cart.product,
+                        quantity=cart.quantity,
+                    )
+                    cart.delete()
+                messages.success(request, 'Your order has been placed')
+            messages.error(request, 'Your cart is empty')
+            return redirect('OrderHistory')
+        else:
+            navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+            carts = CartModels.Cart.objects.filter(user=request.user)
+            userProfile, _ = UserProfileModels.UserProfile.objects.get_or_create(user=request.user)
+            return render(request, 'checkout.html', {
+                'navigationProductCategories' :navigationProductCategories,
+                'carts' : carts,
+                'userProfile' : userProfile
+            })
+    else:
+        return redirect('customerLogin')
+
+
+def OrderHistory(request):
+    if request.user.is_authenticated:
+        orders = OrdersModels.Orders.objects.filter(user=request.user)
+        navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+        return render(request, 'order-history.html', {
+            'orders' : orders,
+            'navigationProductCategories' :navigationProductCategories
+        })
+    else:
+        return redirect('customerLogin')
+
+def OrderDetails(request, order_id):
+    if request.user.is_authenticated:
+        try:
+            """ prefetch_related will fetch all the fk instances in OrderDetails page 'orders' is related_name defined in model file """
+            order = OrdersModels.Orders.objects.prefetch_related('orders').get(id=order_id)
+            navigationProductCategories = ProductModels.ProductCategory.objects.filter(status=True).order_by('-id')[:4]
+            return render(request, 'order-details.html', {
+                'order' : order,
+                'navigationProductCategories' :navigationProductCategories
+            })
+        except OrdersModels.Orders.DoesNotExist:
+            return redirect('OrderHistory')
     else:
         return redirect('customerLogin')
